@@ -421,4 +421,49 @@ public class Main
                          initialized
                        );
   }
+
+  /**
+   * Package level class intended to expose the private internal methods to
+   * the JUnit frame work, since these private members are only used in the
+   * static initialization, to test the publicly available API under additional
+   * scenarios that would not be testable under JUnit, since the Main class
+   * relies on the static initialization on class load.
+   */
+  static class JUnitWhiteBoxExposer
+  {
+    /**
+     * Provides package level access for JUnit testing to the
+     * Main.setJOGL_GLProfile_initSingleton_called(boolean initialized)
+     * @param initialized value to pass to Main's private method.
+     */
+    static void setJOGL_GLProfile_initSingleton_called(boolean initialized)
+    {
+      Main.setJOGL_GLProfile_initSingleton_called(initialized);
+    }
+    /**
+     * Provides package level access for JUnit testing to the
+     * Main.setFirstUIActionOnProcessPropertyValue(boolean wasFirstUIAction)
+     * @param wasFirstUIAction value to pass to Main's private method.
+     */
+    static void setFirstUIActionOnProcessPropertyValue(boolean wasFirstUIAction)
+    {
+      Main.setFirstUIActionOnProcessPropertyValue(wasFirstUIAction);
+    }
+    /**
+     * Provides package level access for JUnit testing to the
+     * Main.setsetBooleanProperty( String forProperty,
+     *                             String propertyName,
+     *                             boolean propertyValue)
+     * @param forProperty value passed to Main's private method.
+     * @param propertyName value passed to Main's private method.
+     * @param propertyValue value passed to Main's private method.
+     */
+    static void setBooleanProperty( String forProperty,
+                                            String propertyName,
+                                            boolean propertyValue
+    )
+    {
+      Main.setBooleanProperty(forProperty, propertyName, propertyValue);
+    }
+  }
 }
