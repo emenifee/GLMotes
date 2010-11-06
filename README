@@ -1,1 +1,29 @@
 Based off some code a few co-workers wrote in OpenGL c++.
+
+Currently the NetBeans (using 6.9.1) project is configured for windows.
+
+To obtain the initial setup to allow the program to run:
+  Started off with tutorial found at https://sites.google.com/site/justinscsstuff/jogl-tutorial-1, modified for NetBeans.
+
+  Used http://jogamp.org/deployment/autobuilds/jogl-b198-2010-11-04_05-53-09/build/jogl-2.0-pre-20101104-windows-amd64.zip, (choose the appropriate arch) copied the lib directory to "C:\lib"
+
+  Copied all the zips from http://jogamp.org/deployment/autobuilds/jogl-master-b152-2010-11-03_20-31-08/build/ into "C:\doc"
+
+  Created a "JOGL_pre2" (Tools->Libraries) library
+    Included the following jars for the Classpath :
+      C:\lib\gluegen-rt.jar
+      C:\lib\jogl.all.jar
+      C:\lib\nativewindow.all.jar
+      C:\lib\newt.all.jar
+    Include the following zips for the JavaDoc :
+      C:\doc\javadoc_dev.zip
+      C:\doc\javadoc_jogl_spec.zip
+      C:\doc\javadoc_nativewindow_spec.zip
+      C:\doc\javadoc_public.zip
+
+    Make sure the Project's Run Property has the VM option '-Djava.library.path="C:\lib"' value so it can find the needed native dlls for windows
+
+TODO:
+  Add the JUnit tests for Main class.
+  Create a gui and GL context.
+  Translate the Motes and ForceLine C++ code into java, and improve the Motes toy.
