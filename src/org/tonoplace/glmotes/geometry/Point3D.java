@@ -38,6 +38,7 @@
 package org.tonoplace.glmotes.geometry;
 
 import java.io.Serializable;
+
 import org.tonoplace.glmotes.utility.FloatingPointComparison;
 
 /**
@@ -250,7 +251,7 @@ public class Point3D implements Serializable
    * @param otherPoint the Point3D to determine the distance from.
    * @return The distance between the two points.
    * @throws NullPointerException if otherPoint is null.
-   * @see equals(Object o)
+   * @see equals(Object obj)
    */
   public double distance(Point3D otherPoint) throws NullPointerException
   {
@@ -259,10 +260,14 @@ public class Point3D implements Serializable
 
   /**
    * Calculates the square of the distance between this Point3D and the
-   * specified Point3D.
+   * specified Point3D.  For 3 points A, B, and C: This method may report
+   * A.distanceSq(B)==0, B.distanceSq(C)==0, but A.distanceSq(C)!=0.  This is
+   * due to fuzzy equals used in comparing doubles.
+   *
    * @param otherPoint the Point3D to determine the square of the distance from.
    * @return The square of the distance between the two points.
    * @throws NullPointerException if otherPoint is null.
+   * @see equals(Object obj)
    */
   public double distanceSq(Point3D otherPoint) throws NullPointerException
   {

@@ -44,6 +44,8 @@ package org.tonoplace.glmotes.utility;
 
 /**
  * Utility class for comparing doubles allowing for error of FP operations.
+ * Based on paper found at
+ * http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
  * @author Elijah C. Menifee
  * @date Nov 6, 2010 5:39:28 PM
  */
