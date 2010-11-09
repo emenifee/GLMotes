@@ -7,6 +7,8 @@ package org.tonoplace.glmotes.geometry;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Random;
+import org.hamcrest.core.IsNull;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,6 +28,7 @@ public class Point3DTest {
   static Field fieldX;
   static Field fieldY;
   static Field fieldZ;
+  static Field fieldHashCode;
   static Method methodGetX;
   static Method methodGetY;
   static Method methodGetZ;
@@ -37,9 +40,11 @@ public class Point3DTest {
       fieldX = clz.getDeclaredField("x_");
       fieldY = clz.getDeclaredField("y_");
       fieldZ = clz.getDeclaredField("z_");
+      fieldHashCode = clz.getDeclaredField("hashCodeCache_");
       fieldX.setAccessible(true);
       fieldY.setAccessible(true);
       fieldZ.setAccessible(true);
+      fieldHashCode.setAccessible(true);
       Class[] methodParameters = null;
       methodGetX = clz.getMethod("getX", methodParameters);
       methodGetY = clz.getMethod("getY", methodParameters);
@@ -94,6 +99,26 @@ public class Point3DTest {
       e.printStackTrace(System.out);
     }
     return val;
+  }
+
+  private Integer getFieldIntegerValue(Field field, Point3D instance)
+  {
+    Object obj = null;
+    try
+    {
+      obj = field.get(instance);
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace(System.out);
+    }
+    if (obj==null)
+      return null;
+    if (obj instanceof Integer)
+    {
+      return (Integer)obj;
+    }
+    return null;
   }
 
   private void testGetMethodDoubleValue0Arg(Method methodToTest,
@@ -341,13 +366,53 @@ public class Point3DTest {
    */
   @Test
   public void testHashCode() {
-    System.out.println("hashCode");
+    System.out.println("hashCode()");
+    // whitebox test of hash algorithm to make sure alg fits expected value
+    // implementation specific test.
     Point3D instance = new Point3D();
-    int expResult = 0;
+    // cache should be null initially
+    Integer hashCache = getFieldIntegerValue(fieldHashCode, instance);
+    assertNull("hashCache not cached",hashCache);
+
+    Double x = getFieldDoubleValue(fieldX, instance);
+    Double y = getFieldDoubleValue(fieldY, instance);
+    Double z = getFieldDoubleValue(fieldZ, instance);
+
+
+    int hx = x.hashCode();
+    int hy = y.hashCode();
+    int hz = z.hashCode();
+    hz <<= 20;
+    hy <<= 10;
+
+    int expResult = hx ^ hy ^ hz;
     int result = instance.hashCode();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertEquals("Expected hash algorithm:", expResult, result);
+
+    hashCache = getFieldIntegerValue(fieldHashCode, instance);
+    assertNotNull("value cached",hashCache);
+    assertEquals("hashCache matches", result, hashCache.intValue());
+
+    Random r = new Random(18736);
+    instance = new Point3D( -3000 * r.nextDouble(), 5000 * r.nextDouble(), 250 * r.nextDouble());
+    x = getFieldDoubleValue(fieldX, instance);
+    y = getFieldDoubleValue(fieldY, instance);
+    z = getFieldDoubleValue(fieldZ, instance);
+
+
+    hx = x.hashCode();
+    hy = y.hashCode();
+    hz = z.hashCode();
+    hz <<= 20;
+    hy <<= 10;
+    int expResult2 =  hx ^ hy ^ hz;
+    int result2 = instance.hashCode();
+    assertEquals(expResult2, result2);
+    hashCache = getFieldIntegerValue(fieldHashCode, instance);
+    assertNotNull("value cached",hashCache);
+    assertEquals("hashCache matches", result2, hashCache.intValue());
+    // alg should be different for different double values.
+    assertNotSame("Different values, differnt hash", result, result2);
   }
 
   /**
@@ -369,12 +434,29 @@ public class Point3DTest {
    * Test of trulyEquals method, of class Point3D.
    */
   @Test
-  public void testTrulyEquals() {
-    System.out.println("trulyEquals");
+  public void almostEquals() {
+    // need to figure out how to determine if almostEquals is working...
+    System.out.println("trulyEquals(Object other)");
     Point3D otherPoint = null;
     Point3D instance = new Point3D();
     boolean expResult = false;
-    boolean result = instance.trulyEquals(otherPoint);
+    boolean result = instance.almostEquals(otherPoint);
+    assertEquals(expResult, result);
+    // TODO review the generated test code and remove the default call to fail.
+    fail("The test case is a prototype.");
+  }
+
+  /**
+   * Test of trulyEquals method, of class Point3D.
+   */
+  @Test
+  public void almostEqualsULPS() {
+    // need to figure out how to detminer if almostEquals is working...
+    System.out.println("trulyEquals(Object other, long ULPS");
+    Point3D otherPoint = null;
+    Point3D instance = new Point3D();
+    boolean expResult = false;
+    boolean result = instance.almostEquals(otherPoint, 0);
     assertEquals(expResult, result);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
