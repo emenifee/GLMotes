@@ -90,6 +90,18 @@ public class Point3D implements Serializable
   }
 
   /**
+   * Constructs and initializes a Point3D based on an existing point.
+   * @param point3d the point to copy to this point.
+   * @throws NullPointerException if copy is NULL.
+   */
+  Point3D(Point3D copy) throws NullPointerException
+  {
+//    if (copy==null)
+//      throw new NullPointerException("Was given a NULL Point3D to copy from");
+//    this(copy.getX(), copy.getY(), copy.getZ());
+  }
+
+  /**
    * Constructs and initializes a Point3D with the specified coordinates.
    * @param x the X coordinate of the newly constructed Point3D
    * @param y the Y coordinate of the newly constructed Point3D
@@ -367,4 +379,9 @@ public class Point3D implements Serializable
     return 0.0d;
   }
 
+  /**
+   * To support Serialization across future versions where storage requirements
+   * have not changed...
+   */
+  private static final long serialVersionUID = 20101113000L;
 }
