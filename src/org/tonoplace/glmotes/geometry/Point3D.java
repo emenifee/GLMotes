@@ -79,14 +79,15 @@ public class Point3D implements Serializable
    * Caches the hashCode value, once needed to speed up subsequent calls, since
    * it can be more expensive to perform the additional math for the hashCode
    */
-  private Integer hashCodeCache_ = null;
+  private transient Integer hashCodeCache_;
 
   /**
    * Constructs and initializes a Point3D with coordinates(0,0,0).
    */
   Point3D()
   {
-    //this(0, 0, 0);
+    x_ = y_ = z_ = 0.0d;
+    hashCodeCache_ = null;
   }
 
   /**
@@ -96,9 +97,12 @@ public class Point3D implements Serializable
    */
   Point3D(Point3D copy) throws NullPointerException
   {
-//    if (copy==null)
-//      throw new NullPointerException("Was given a NULL Point3D to copy from");
-//    this(copy.getX(), copy.getY(), copy.getZ());
+    if (copy==null)
+      throw new NullPointerException("Was given a NULL Point3D to copy from");
+    x_ = copy.x_;
+    y_ = copy.y_;
+    z_ = copy.z_;
+    hashCodeCache_ = null;
   }
 
   /**
@@ -109,9 +113,10 @@ public class Point3D implements Serializable
    */
   Point3D(double x, double y, double z)
   {
-    //x_ = x;
-    //y_ = y;
-    //z_ = z;
+    x_ = x;
+    y_ = y;
+    z_ = z;
+    hashCodeCache_ = null;
   }
   
   /**
@@ -125,7 +130,14 @@ public class Point3D implements Serializable
   Point3D(double[] doubles)
     throws NullPointerException, IllegalArgumentException
   {
-    this(doubles, 0);
+    if (doubles==null)
+      throw new NullPointerException("Was given a NULL array of doubles!");
+    if (doubles.length<3)
+      throw new IllegalArgumentException("The doubles array must have a length of at least 3!");
+    x_ = doubles[0];
+    y_ = doubles[1];
+    z_ = doubles[2];
+    hashCodeCache_ = null;
   }
 
   /**
@@ -140,7 +152,15 @@ public class Point3D implements Serializable
   Point3D(double[] doubles, int offset)
     throws NullPointerException, IllegalArgumentException
   {
-
+    if (doubles==null)
+      throw new NullPointerException("Was given a NULL array of doubles!");
+    int minSize = 3+offset;
+    if (doubles.length<minSize)
+      throw new IllegalArgumentException("The doubles array must have a length of at least " + minSize +"!");
+    x_ = doubles[offset];
+    y_ = doubles[offset+1];
+    z_ = doubles[offset+2];
+    hashCodeCache_ = null;
   }
   /**
    * Returns the X coordinate of this Point3D in double precision.
@@ -148,7 +168,7 @@ public class Point3D implements Serializable
    */
   public double getX()
   {
-    return 0d;
+    return x_;
   }
 
   /**
@@ -157,7 +177,7 @@ public class Point3D implements Serializable
    */
   public double getY()
   {
-    return 0d;
+    return y_;
   }
 
   /**
@@ -166,7 +186,7 @@ public class Point3D implements Serializable
    */
   public double getZ()
   {
-    return 0d;
+    return z_;
   }
 
   /**
@@ -176,7 +196,15 @@ public class Point3D implements Serializable
   @Override
   public String toString()
   {
-    return "";
+    StringBuilder returnValue = new StringBuilder();
+    returnValue.append("Point3D[");
+    returnValue.append(x_);
+    returnValue.append(",");
+    returnValue.append(y_);
+    returnValue.append(",");
+    returnValue.append(z_);
+    returnValue.append("]");
+    return returnValue.toString();
   }
 
   //
@@ -218,7 +246,31 @@ public class Point3D implements Serializable
   @Override
   public int hashCode()
   {
-    return 0;
+    Integer cache = null;
+    synchronized(this)
+    {
+      cache = hashCodeCache_;
+    }
+    if (cache==null)
+    {
+      Double x = x_;
+      Double y = y_;
+      Double z = z_;
+
+      int hx = x.hashCode();
+      int hy = y.hashCode();
+      int hz = z.hashCode();
+      hz <<= 20;
+      hy <<= 10;
+
+      int hashCode = hx ^ hy ^ hz;
+      cache = new Integer(hashCode);
+      synchronized(this)
+      {
+        hashCodeCache_ = cache;
+      }
+    }
+    return cache.intValue();
   }
 
   
@@ -268,6 +320,13 @@ public class Point3D implements Serializable
   @Override
   public boolean equals(Object obj)
   {
+    if (obj==null)
+      return false;
+    if (obj instanceof Point3D)
+    {
+      Point3D p3d = (Point3D)obj;
+      return x_==p3d.x_ && y_==p3d.y_ && z_==p3d.z_;
+    }
     return false;
   }
 
@@ -297,32 +356,7 @@ public class Point3D implements Serializable
    */
   public boolean almostEquals(Point3D otherPoint)
   {
-    return false;
-    /**
-    if (obj==null)
-      return false;
-    if (obj instanceof Point3D)
-    {
-      Point3D b = (Point3D) obj;
-      if (trulyEquals(b))
-        return true;
-      // might be more accurate to see how close the distance between the points
-      // is to zero, and use that to determine if the points are close enough
-      // to be considered as the same point, however distance requires sqrt calc
-      // which can be slow, so just do simpler faster bit based comparision to
-      // determine if all individual coordinates are close to one another.
-      long doublePrecisionULPS = 128;
-      boolean sameX = FloatingPointComparison.AlmostEqual2sComplement(x_, b.x_, doublePrecisionULPS);
-      if (!sameX)
-        return false;
-      boolean sameY = FloatingPointComparison.AlmostEqual2sComplement(y_, b.y_, doublePrecisionULPS);
-      if (!sameY)
-        return false;
-      boolean sameZ = FloatingPointComparison.AlmostEqual2sComplement(z_, b.z_, doublePrecisionULPS);
-      return sameZ;
-    }
-    return false;
-     **/
+    return almostEquals(otherPoint, EPSILON_ULPS);
   }
   /**
    * Compares this object against the specified object.  This method will only
@@ -342,6 +376,27 @@ public class Point3D implements Serializable
    */
   public boolean almostEquals(Point3D otherPoint, long ULPS)
   {
+    if (otherPoint==null)
+      return false;
+    if (otherPoint instanceof Point3D)
+    {
+      Point3D b = (Point3D) otherPoint;
+      if (equals(b))
+        return true;
+      // might be more accurate to see how close the distance between the points
+      // is to zero, and use that to determine if the points are close enough
+      // to be considered as the same point, however distance requires sqrt calc
+      // which can be slow, so just do simpler faster bit based comparision to
+      // determine if all individual coordinates are close to one another.
+      boolean sameX = FloatingPointComparison.AlmostEqual2sComplement(x_, b.x_, ULPS);
+      if (!sameX)
+        return false;
+      boolean sameY = FloatingPointComparison.AlmostEqual2sComplement(y_, b.y_, ULPS);
+      if (!sameY)
+        return false;
+      boolean sameZ = FloatingPointComparison.AlmostEqual2sComplement(z_, b.z_, ULPS);
+      return sameZ;
+    }
     return false;
   }
 
@@ -360,7 +415,7 @@ public class Point3D implements Serializable
    */
   public double distance(Point3D otherPoint) throws NullPointerException
   {
-    return 0.0d;
+    return Math.sqrt(distanceSq(otherPoint));
   }
 
   /**
@@ -376,7 +431,10 @@ public class Point3D implements Serializable
    */
   public double distanceSq(Point3D otherPoint) throws NullPointerException
   {
-    return 0.0d;
+    double x = x_ - otherPoint.x_;
+    double y = y_ - otherPoint.y_;
+    double z = z_ - otherPoint.z_;
+    return x * x + y * y + z * z;
   }
 
   /**

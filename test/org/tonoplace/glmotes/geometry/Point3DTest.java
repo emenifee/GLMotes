@@ -379,9 +379,9 @@ public class Point3DTest {
     Integer hashCache = getFieldIntegerValue(fieldHashCode, instance);
     assertNull("hashCache not cached",hashCache);
 
-    Double x = getFieldDoubleValue(fieldX, instance);
-    Double y = getFieldDoubleValue(fieldY, instance);
-    Double z = getFieldDoubleValue(fieldZ, instance);
+    Double x = instance.getX();
+    Double y = instance.getY();
+    Double z = instance.getZ();
 
 
     int hx = x.hashCode();
